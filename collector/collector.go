@@ -40,5 +40,28 @@ func copyFile(src, dst string) error {
 }
 
 func CollectImages(srcDir, dstDir string) error {
+	// 出力フォルダ作成
+	err := os.MkdirAll(dstDir, 0755)
 
+	if err != nil {
+		return err
+	}
+
+	return filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		if !isImage(path) {
+			return nil
+		}
+
+		dstPath := filepath.Join(dstDir, info.Name())
+
+		return copyFile(path, dstPath)
+	})
 }

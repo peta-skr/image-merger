@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"image-meger/collector"
 	"log"
 	"os"
-
 )
 
 func main() {
@@ -12,13 +12,13 @@ func main() {
 		fmt.Println("Usage: image-collector <src> <dst>")
 		return
 	}
-	
+
 	src := os.Args[1]
 	dst := os.Args[2]
 
 	err := collector.CollectImages(src, dst)
 
-	err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
