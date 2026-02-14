@@ -1,26 +1,47 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"image-meger/collector"
 	"log"
 	"os"
+	"strings"
 )
 
+type multiFlag []string
+
+func (m *multiFlag) String() string { return strings.Join(*m, ",") }
+func (m *multiFlag) Set(v string) error {
+	*m = append(*m, v)
+	return nil
+}
+
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Println("Usage: image-collector <src> <dst>")
-		return
+	var srcs multiFlag
+	var dst string
+	var dryRun bool
+
+	flag.Var(&srcs, "src", "source directory (can be specified multiple times)")
+	flag.StringVar(&dst, "dst", "", "destination directory")
+	flag.BoolVar(&dryRun, "dry-run", false, "print plan only")
+	flag.Parse()
+
+	if len(srcs) == 0 || dst == "" {
+		fmt.Println("Usage: img-collector --src <dir> [--src <dir> ...] --dst <dir> [--dry-run]")
+		os.Exit(1)
 	}
 
-	src := os.Args[1]
-	dst := os.Args[2]
+	opt := collector.Options{
+		Sources: srcs,
+		Dest:    dst,
+		DryRun:  dryRun,
+	}
 
-	err := collector.CollectImages(src, dst)
-
+	res, err := collector.Run(opt)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Done!")
+	fmt.Printf("Done. copied=%d skipped=%d failed=%d\n", res.Copied, res.Skipped, res.Failed)
 }
